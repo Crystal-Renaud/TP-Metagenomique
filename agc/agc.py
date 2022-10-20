@@ -24,13 +24,13 @@ from collections import Counter
 # ftp://ftp.ncbi.nih.gov/blast/matrices/
 import nwalign3 as nw
 
-__author__ = "Your Name"
+__author__ = "Crystal Renaud"
 __copyright__ = "Universite Paris Diderot"
-__credits__ = ["Your Name"]
+__credits__ = ["Crystal Renaud"]
 __license__ = "GPL"
 __version__ = "1.0.0"
-__maintainer__ = "Your Name"
-__email__ = "your@email.fr"
+__maintainer__ = "Crystal Renaud"
+__email__ = "crystal.renaud@orange.fr"
 __status__ = "Developpement"
 
 
@@ -71,16 +71,44 @@ def get_arguments():
     return parser.parse_args()
 
 def read_fasta(amplicon_file, minseqlen):
-    pass
+    with gzip.open(amplicon_file, "rt") as file:
+        seq = "" 
+
+        for line in file:
+            if line[0] == '>':
+                if seq == "":
+                    continue
+                elif seq != "":
+                    if len(seq) >= minseqlen:
+                        yield seq
+                    seq = ""
+            else:
+                seq += line.strip()
+        if len(seq) >= minseqlen:
+            yield seq
 
 
 def dereplication_fulllength(amplicon_file, minseqlen, mincount):
-    pass
+    dict_seq = {} 
+    for seq in read_fasta(amplicon_file, minseqlen): 
+        if seq in dict_seq:
+            dict_seq[seq] = dict_seq[seq] + 1
+        else:
+            dict_seq[seq] = dict_seq(seq, 1)
+    
+    for key, value in sorted(dict_seq.items(), key = lambda items : items[1], reverse = True):
+        if value >= mincount:
+            yield [key, value]   
+
 
 def get_identity(alignment_list):
     """Prend en une liste de séquences alignées au format ["SE-QUENCE1", "SE-QUENCE2"]
     Retourne le pourcentage d'identite entre les deux."""
-    pass
+    identity = 0
+    for i in range(len(alignment_list[0])):
+        if alignment_list[0][i] == alignment_list[1][i]:
+            identity += 1
+    return 100 * identity/len(alignment_list[0])
 
 def abundance_greedy_clustering(amplicon_file, minseqlen, mincount, chunk_size, kmer_size):
     pass
