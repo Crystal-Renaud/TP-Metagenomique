@@ -111,25 +111,26 @@ def get_identity(alignment_list):
     return 100 * identity/len(alignment_list[0])
 
 def abundance_greedy_clustering(amplicon_file, minseqlen, mincount, chunk_size, kmer_size):
-    OTU_list = []
+    otu_list = []
 
     for key, value in dereplication_fulllength(amplicon_file, minseqlen, mincount):
-        if not OTU_list:
-            OTU_list.append([key, value])
+        if not otu_list:
+            otu_list.append([key, value])
     
-    for seq_otu in OTU_list:
+    for seq_otu in otu_list:
         alignment_list = nw.global_align(seq_otu[0], key, gap_open=-1, gap_extend=-1, 
         matrix=os.path.abspath(os.path.join(os.path.dirname(__file__),"MATCH")))
         if get_identity(alignment_list) > 97:
             continue
-        OTU_list.append([key, value])
-    return OTU_list
+        otu_list.append([key, value])
+    return otu_list
 
 
-def write_OTU(OTU_list, output_file):
+def write_OTU(otu_list, output_file):
     with open(output_file, "w") as file:
-        for i in range(len(OTU_list)):
-            file.write(">OTU_" + str(i + 1) + " occurrence:" + str(OTU_list[i][1]) + "\n" + textwrap.fill((OTU_list[i][0]), width=80) + "\n")
+        for i in range(len(otu_list)):
+            file.write(">OTU_" + str(i + 1) + " occurrence:" + str(otu_list[i][1]) 
+            + "\n" + textwrap.fill((otu_list[i][0]), width=80) + "\n")
 
 #==============================================================
 # Main program
